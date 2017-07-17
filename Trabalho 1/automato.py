@@ -221,9 +221,15 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
 					internoDict = {}
 					for a in conjuntoRefTerm: 
 						internoDict[a] = ''
-					cont = 0
+					cont = 0 
+					auxState = ''
+					flagFinal = 0
 					for k in dicionario[state][1][ter]:   #Nao terminais que geram indeterminismo
 						print(dicionario[state][1][ter][cont])
+						auxState = dicionario[state][1][ter][cont]
+						if dicionario[auxState][0] == 1:
+							print("ACHEI UM FINAL")
+							flagFinal = 1
 
 						for t in conjuntoRefTerm:
 							if str(dicionario[k][1]).find(t) != -1:
@@ -235,7 +241,7 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
  
 
 
-					dicionario[dicionario[state][1][ter]] = [0,internoDict]
+					dicionario[dicionario[state][1][ter]] = [flagFinal,internoDict]
 					ordemEntrada.append(dicionario[state][1][ter])
 					print("achou")
 					print(dicionario[state][1][ter])
@@ -283,5 +289,3 @@ imprimeAutomato(dicionario, ordemEntrada)
 print("dicionário Final\n")
 print(dicionario)
 # print("\n\n")
-
-
