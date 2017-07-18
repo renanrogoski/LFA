@@ -192,7 +192,8 @@ def criaDictTerminais(producoes):
 
 			if len(pr) == 1 and pr != "&":
 				ter = pr
-				dictProd[pr] = ""
+				dictProd[pr] = "X"
+				dicionario['X'] = [1, {'': ''}]
 
 
 
@@ -237,6 +238,8 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
 								if str(dicionario[k][1][t]) != str(internoDict[t]):
 									internoDict[t] = str(dicionario[k][1][t])+str(internoDict[t])
 
+						# ordemEntrada.remove(k)
+
 						cont += 1
  
 
@@ -279,8 +282,6 @@ cria_automatoGram(separaGramaticaDeTokens(0, entrada))
 cria_automatoTok(separaGramaticaDeTokens(1, entrada))
 determiniza(dicionario, ordemEntrada, conjuntoRefTerm)
 
-imprimeAutomato(dicionario, ordemEntrada)
-
 
 # print("\n\n\n\n\nref terminais")
 # print(conjuntoRefTerm)
@@ -289,3 +290,5 @@ imprimeAutomato(dicionario, ordemEntrada)
 print("dicionário Final\n")
 print(dicionario)
 # print("\n\n")
+
+imprimeAutomato(dicionario, ordemEntrada)
