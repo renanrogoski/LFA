@@ -255,7 +255,36 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
 	print("determ encontrados")
 	print(determEncontrados)
 
+def minimiza(dicionario, ordemEntrada):
+	for estado in ordemEntrada:
+		if dicionario[estado][0] != 1:
+			result = minimizacao(dicionario, estado)
+			if result == 0:
+				ordemEntrada.remove(estado)
 
+	print("terminnou minimização")
+
+def minimizacao(dicionario, estado):
+	global conjuntoRefTerm
+	global ordemEntrada
+	
+	encontrouStateFinal = 0
+
+	# for ter in conjuntoRefTerm:
+	ter = 'a'
+	print("isto é estado")
+	print(estado)
+	print(ter)
+	if str(dicionario[estado][1]).find(ter) != -1:
+		print("procura ter")
+		
+		st = dicionario[estado][1][ter]
+		if st != '' and dicionario[st][0] != 1 and st != estado:
+			minimizacao(dicionario, st)
+		else: # dicionario[st][0] == 1:
+			print("relaciona como encontrado um estado final na busca")
+			encontrouStateFinal = 1
+			return encontrouStateFinal
 
 def imprimeAutomato(dicionario, ordemEntrada):
 
@@ -290,5 +319,9 @@ determiniza(dicionario, ordemEntrada, conjuntoRefTerm)
 print("dicionário Final\n")
 print(dicionario)
 # print("\n\n")
+
+imprimeAutomato(dicionario, ordemEntrada)
+
+#minimiza(dicionario, ordemEntrada)
 
 imprimeAutomato(dicionario, ordemEntrada)
