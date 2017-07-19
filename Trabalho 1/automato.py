@@ -256,7 +256,7 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
 	print("determ encontrados")
 	print(determEncontrados)
 
-def minimiza(dicionario, ordemEntrada):
+def minimiza(dicionario, ordemEntrada): #falta os inalcançáveis (mortos aparentemente ok)
 	for estado in ordemEntrada:
 		if dicionario[estado][0] != 1:
 			result = minimizacao(dicionario, estado, 0)
