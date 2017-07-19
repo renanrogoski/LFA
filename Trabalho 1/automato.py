@@ -186,7 +186,7 @@ def criaDictTerminais(producoes):
 
 			if pr == "&":
 				ter = "&"
-				dictProd[""] = "&"
+				# dictProd[""] = ""
 				tipo = 1
 
 
@@ -194,6 +194,7 @@ def criaDictTerminais(producoes):
 				ter = pr
 				dictProd[pr] = "X"
 				dicionario['X'] = [1, {'': ''}]
+				ordemEntrada.append('X')
 
 
 
@@ -218,7 +219,7 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
 				# if len(ind) == 2:
 				# 	determEncontrados.add(ind)
 
-				if (len(ind) == 2 or len(ind) == 3) and ind not in determEncontrados: # tem indeterminismo
+				if len(ind) > 1 and ind not in determEncontrados: # tem indeterminismo
 					internoDict = {}
 					for a in conjuntoRefTerm: 
 						internoDict[a] = ''
@@ -249,7 +250,7 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
 					print("achou")
 					print(dicionario[state][1][ter])
 
-				if len(ind) == 2 or len(ind) == 3:
+				if len(ind) > 1:
 					determEncontrados.add(ind)
 
 	print("determ encontrados")
@@ -258,33 +259,41 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
 def minimiza(dicionario, ordemEntrada):
 	for estado in ordemEntrada:
 		if dicionario[estado][0] != 1:
-			result = minimizacao(dicionario, estado)
-			if result == 0:
+			result = minimizacao(dicionario, estado, 0)
+			print("RESULT")
+			print(result)
+			if result != 1:
+				print("****************************************estado "+estado+" é morto")
 				ordemEntrada.remove(estado)
 
 	print("terminnou minimização")
 
-def minimizacao(dicionario, estado):
+def minimizacao(dicionario, estado, contador):
 	global conjuntoRefTerm
 	global ordemEntrada
+	contador += 1
 	
-	encontrouStateFinal = 0
 
-	# for ter in conjuntoRefTerm:
-	ter = 'a'
-	print("isto é estado")
-	print(estado)
-	print(ter)
-	if str(dicionario[estado][1]).find(ter) != -1:
-		print("procura ter")
+	for ter in conjuntoRefTerm:
 		
-		st = dicionario[estado][1][ter]
-		if st != '' and dicionario[st][0] != 1 and st != estado:
-			minimizacao(dicionario, st)
-		else: # dicionario[st][0] == 1:
-			print("relaciona como encontrado um estado final na busca")
-			encontrouStateFinal = 1
-			return encontrouStateFinal
+		# print("isto é estado")
+		# print(estado)
+		# print(ter)
+		if str(dicionario[estado][1]).find(ter) != -1:
+			# print("procura ter")
+			
+			st = dicionario[estado][1][ter] # estado acessado
+			if contador  >= 20:
+				return 0
+			if st != '' and dicionario[st][0] != 1 and st != estado:
+				# print("minimização sendo chamado..st: "+st)
+				# print("contador: ")
+				# print(contador)
+				minimizacao(dicionario, st, contador)
+			elif dicionario[st][0] == 1:
+				print("relaciona como encontrado um estado final na busca")
+				
+				return 1
 
 def imprimeAutomato(dicionario, ordemEntrada):
 
@@ -322,6 +331,6 @@ print(dicionario)
 
 imprimeAutomato(dicionario, ordemEntrada)
 
-#minimiza(dicionario, ordemEntrada)
+minimiza(dicionario, ordemEntrada)
 
 imprimeAutomato(dicionario, ordemEntrada)
