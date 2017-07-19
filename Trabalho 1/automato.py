@@ -9,6 +9,9 @@ dicionario = {}
 ordemEntrada = []
 conjuntoRefTerm = set()
 determEncontrados = set()
+estadosAlcancados = set()
+visitados = set()
+todosEstados = set()
 
 
 ########################################### Funções ###########################################
@@ -256,7 +259,7 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
 	print("determ encontrados")
 	print(determEncontrados)
 
-def minimiza(dicionario, ordemEntrada): #falta os inalcançáveis (mortos aparentemente ok)
+def minimiza(dicionario, ordemEntrada): #falta os inalcancaveis (mortos aparentemente ok)
 	for estado in ordemEntrada:
 		if dicionario[estado][0] != 1:
 			result = minimizacao(dicionario, estado, 0)
@@ -266,7 +269,61 @@ def minimiza(dicionario, ordemEntrada): #falta os inalcançáveis (mortos aparen
 				print("****************************************estado "+estado+" é morto")
 				ordemEntrada.remove(estado)
 
-	print("terminnou minimização")
+	print("terminnou minimização por mortos.............")
+
+	for x in ordemEntrada:#criado conjunto com todos estados a visitar para comparar com os ja visitados
+		todosEstados.add(x)
+	#chamando funcao que faz a parte dos inalcancaveis
+	result = eliminaInalcancaveis(dicionario, 0, 'T')
+	print(result)
+
+	print("retornou da elimina inalcancaveis")
+	print("visitados "+str(visitados))
+	print("estados alcançados "+str(estadosAlcancados))
+	print("todosEstados "+str(todosEstados))
+
+
+def eliminaInalcancaveis(dicionario, flag, S):
+	# dicionario = {} # ordemEntrada = [] # conjuntoRefTerm = set() # determEncontrados = set()
+	# estadosAlcancados = set() # visitados = set() # estadosAcessar = set() # todosEstados = set()
+	estadosAcessar = set()
+	aceitou = 1
+	if flag == 0:
+		inicio = 'S'
+	else:
+		inicio = S
+	
+	for terminal in conjuntoRefTerm:
+		if str(dicionario[inicio][1]).find(terminal) != -1:
+			#estados a varrer na chamada corrente da funcao
+			estadosAcessar.add(dicionario[inicio][1][terminal]) 
+
+	for st in estadosAcessar:
+		visitados.add(st)
+		if dicionario[st][0] == 1:
+			estadosAlcancados.add(st)
+
+
+	if todosEstados not in visitados:
+		for st in estadosAcessar:
+			proxEstado = st	
+
+			if dicionario[st][0] != 1:
+				
+				aceitou = eliminaInalcancaveis(dicionario, 1, proxEstado)
+			else:
+				return 0
+
+	# for st in estadosAcessar:
+	# 	visitados.add(st)
+	# 	if dicionario[st][0] == 1 or aceitou == 0:
+	# 		estadosAlcancados.add(st)
+
+	
+
+
+
+
 
 def minimizacao(dicionario, estado, contador):
 	global conjuntoRefTerm
