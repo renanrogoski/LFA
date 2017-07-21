@@ -5,17 +5,14 @@ import struct
 import os
 import collections
 
-dicionario = {}
-ordemEntrada = []
-conjuntoRefTerm = set()
+dicionario        = {}
+ordemEntrada      = []
+conjuntoRefTerm   = set()
 determEncontrados = set()
-estadosAlcancados = set()
-estadosAlcancados.add('S')
-visitados = set()
-todosEstados = set()
+conjMortos        = set()
 
 
-########################################### Funções ###########################################
+########################################### Funcoes ###########################################
 # ordered dict
 def read_entrada(nome):
 	arquivo  = open('arquivos/'+nome, "rb")
@@ -26,7 +23,7 @@ def read_entrada(nome):
 
 def separaGramaticaDeTokens(tipo, entrada):	
 	entrada = str(entrada).replace(" ","")
-	entrada   = entrada.split('\n')
+	entrada = entrada.split('\n')
 	gram = ''
 	tok  = ''
 	for i in entrada:
@@ -83,7 +80,7 @@ def cria_automatoTok(lista):
 					dicionario[proximoEstado] = [0, {j:estadoFinal}]
 					dicionario[proximoEstado][1][j] = ordemEntrada[len(ordemEntrada)-1]
 				
-				# Valida se é estado final ou não
+				# Valida se eh estado final ou nao
 				if cont == len(i)-1: # ultima letra do token... gera um estado final
 					dicionario[estadoFinal] = [1, {'':''}]
 
@@ -121,7 +118,7 @@ def buscaProxEstado(terminal):
 	return novaLetra
 
 ##### Gramaticas #####
-def cria_automatoGram(lista): #recebe uma string com estados e produções
+def cria_automatoGram(lista): #recebe uma string com estados e producoes
 	
 	if len(lista) > 0:
 
@@ -148,7 +145,7 @@ def cria_automatoGram(lista): #recebe uma string com estados e produções
 		
 		# print(ordemEntrada)
 		
-		# print("dicionário Final\n")
+		# print("dicionario Final\n")
 
 		# print(dicionario)
 
@@ -164,7 +161,7 @@ def criaDictTerminais(producoes):
 	
 	tipo = 0
 	for pr in listaProducoes:
-		DP = pr.split("<") # esquerda é estado e direita é produções
+		DP = pr.split("<") # esquerda eh estado e direita eh producoes
 		# print("duaspartes 0")
 		# print(duaspartes[0])
 		possuiTerminal = 0
@@ -172,7 +169,7 @@ def criaDictTerminais(producoes):
 		
 		if DP[0] in conjuntoTerminais:
 
-			#if len(pr) == 1 # não faz nada
+			#if len(pr) == 1 # nao faz nada
 			if len(pr) == 4:
 				dictProd[DP[0]] =  str(dictProd[DP[0]])+str(DP[1]).replace(">","")
 
@@ -261,105 +258,130 @@ def determiniza(dicionario, ordemEntrada, conjuntoRefTerm):
 	print(determEncontrados)
 
 def minimiza(dicionario, ordemEntrada): #falta os inalcancaveis (mortos aparentemente ok)
-	# for estado in ordemEntrada:
-	# 	if dicionario[estado][0] != 1:
-	# 		result = minimizacao(dicionario, estado, 0)
-	# 		print("RESULT")
-	# 		print(result)
-	# 		if result != 1:
-	# 			print("****************************************estado "+estado+" é morto")
-	# 			ordemEntrada.remove(estado)
-
-	print("terminnou minimização por mortos.............")
-
-	for x in ordemEntrada:#criado conjunto com todos estados a visitar para comparar com os ja visitados
-		todosEstados.add(x)
-	#chamando funcao que faz a parte dos inalcancaveis
-	visitados.add('S')
-	result = eliminaInalcancaveis(dicionario, 0, 'T')
-	print(result)
-
-	print("retornou da elimina inalcancaveis")
-	print("visitados "+str(visitados))
-	print("estados alcançados "+str(estadosAlcancados))
-	print("todosEstados "+str(todosEstados))
-
-
-def eliminaInalcancaveis(dicionario, flag, S):
-	# dicionario = {} # ordemEntrada = [] # conjuntoRefTerm = set() # determEncontrados = set()
-	# estadosAlcancados = set() # visitados = set() # estadosAcessar = set() # todosEstados = set()
-	estadosAcessar = set()
-	aceitou = 1
-	if flag == 0:
-		inicio = 'S'
-	else:
-		inicio = S
+	for estado in ordemEntrada:
+		#if dicionario[estado][0] != 1: # nao eh estado final			
+		buscaEbsolon(estado)
 	
+	print("terminnou minimizacao")
+	print("CONJUNTO MORTOS")
+	print(conjMortos)
+
+def buscaEbsolon(estado):
+	global dicionario
+	global conjuntoRefTerm
+
+	#print(dicionario)
+
+	print("buscaEbsolon == estado")
+	print(estado)
+
 	for terminal in conjuntoRefTerm:
-		if str(dicionario[inicio][1]).find(terminal) != -1:
-			#estados a varrer na chamada corrente da funcao
-			estadosAcessar.add(dicionario[inicio][1][terminal]) 
+		if str(dicionario[estado][1]).find(terminal) != -1: # existe esse terminal em S
+			aux = ''
+			for producoes in dicionario[estado][1][terminal]: # varre todas as producoes do estado S
+				aux = str(aux)+str(producoes)
+			producao = aux
 
-	for st in estadosAcessar:
-		visitados.add(st)
-		if dicionario[st][0] == 1:
-			estadosAlcancados.add(st)
-
-
-	if todosEstados != visitados:#.intersection()
-		for st in estadosAcessar:
 			
+			buscaEbsolonEstado(producao, 0) # funcao que busca ebsolon somente nas producoes deste estado
+			# print("RETORNO DA FUNCAO")
+			# print(retorno)
+			# if retorno == 10: # este estado ja encontrou &, nao precisa analisar as outras producoes dele
+			# 	return 10
+			# if retorno == -1: # morto
+			# 	return -1
 
-			if dicionario[st][0] != 1:
-				proxEstado = st	
+			#print(producao+" | ")
+
+
+def buscaEbsolonEstado(estado, qtd):
+	global dicionario
+	global conjuntoRefTerm
+	global conjMortos
+
+	qtd += 1
+
+	print("Busca & nestas producoes")
+	print(estado)
+
+	for terminal in conjuntoRefTerm:
+		print("estado")
+		print(estado)
+		if estado != '':
+			if dicionario[estado][0] == 0: # nao eh final
+		
+				if str(dicionario[estado][1]).find(terminal) != -1 and dicionario[estado][1][terminal] != '':
+					print("teste")
+					print(dicionario[estado][1][terminal])
+					print(qtd)
+					if qtd < 20:
+						buscaEbsolonEstado(dicionario[estado][1][terminal], qtd)
+					else: 
+						# MORTO
+						print('MORTO')
+						print(estado)
+						if dicionario[estado][0] == 0: # nao eh final
+							conjMortos.add(estado) # primeiro estado do loop
+						if dicionario[dicionario[estado][1][terminal]][0] == 0: # nao eh final
+							conjMortos.add(dicionario[estado][1][terminal]) # segundo estado do loop
+						#ordemEntrada.remove(estado) # remove morto
+					
+
+		
 				
-				aceitou = eliminaInalcancaveis(dicionario, 1, proxEstado)
-			else:
-				# proxEstado = st	
-				# estadosAcessar.clear()
-				return 0
-
-	# for st in estadosAcessar:
-	# 	visitados.add(st)
-	# 	if dicionario[st][0] == 1 or aceitou == 0:
-	# 		estadosAlcancados.add(st)
-
+			# if str(dicionario[estado][1]).find(terminal) != -1:
+			# 	for producoes in dicionario[estado][1][terminal]: # varre todas as producoes do estado S	
+			# 		print("terminais")
+			# 		print("||| "+producoes)
+		
 	
-
-
-
-
 
 def minimizacao(dicionario, estado, contador):
 	global conjuntoRefTerm
 	global ordemEntrada
+
 	contador += 1
 	
+	#print("Estado ")
+	#print(estado)
+	#print(contador)
 
 	for ter in conjuntoRefTerm:
 		
-		# print("isto é estado")
+		# print("isto eh estado")
 		# print(estado)
 		# print(ter)
 		if str(dicionario[estado][1]).find(ter) != -1:
 			# print("procura ter")
 			
+			if contador >= 20:
+				print("RETURNNNNNN 0")
+				print(estado)
+
+				contador = 0
+				flag = 0
+
 			st = dicionario[estado][1][ter] # estado acessado
-			if contador  >= 20:
-				return 0
+			
 			if st != '' and dicionario[st][0] != 1 and st != estado:
-				# print("minimização sendo chamado..st: "+st)
+				# print("minimizacao sendo chamado..st: "+st)
 				# print("contador: ")
 				# print(contador)
+				print("No if")
 				minimizacao(dicionario, st, contador)
 			elif dicionario[st][0] == 1:
-				print("relaciona como encontrado um estado final na busca")
-				
+				print("ACHOU O ESTADO FINAL")		
+				print(st)
+				flag = 1		
 				return 1
+	print("Saiu do for")
+	
+	return flag
+	
 
 def imprimeAutomato(dicionario, ordemEntrada):
 
-	print("\n\nImpressão\n")
+	print("\n\nDicionario Final\n")
 	for i in ordemEntrada:
 		if dicionario[i][0] == 1:
 			final = '*'
@@ -380,10 +402,6 @@ entrada = read_entrada("entrada.txt")
 
 cria_automatoGram(separaGramaticaDeTokens(0, entrada))
 cria_automatoTok(separaGramaticaDeTokens(1, entrada))
-print("Automato Original")
-imprimeAutomato(dicionario, ordemEntrada)
-print("dicionário do Automato Original\n")
-print(dicionario)
 determiniza(dicionario, ordemEntrada, conjuntoRefTerm)
 
 
@@ -391,12 +409,12 @@ determiniza(dicionario, ordemEntrada, conjuntoRefTerm)
 # print(conjuntoRefTerm)
 # print("Ordem Entrada")
 # print(ordemEntrada)
-print("dicionário apos determinizar\n")
+print("dicionario Final\n")
 print(dicionario)
 # print("\n\n")
-print("Automato Determinizado")
+
 imprimeAutomato(dicionario, ordemEntrada)
 
-# minimiza(dicionario, ordemEntrada)
-# print("Automato Determinizado Minimizado")
-# imprimeAutomato(dicionario, ordemEntrada)
+minimiza(dicionario, ordemEntrada)
+
+imprimeAutomato(dicionario, ordemEntrada)
