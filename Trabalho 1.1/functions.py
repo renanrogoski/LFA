@@ -270,7 +270,10 @@ def determinizaLinha(estado):
 			# Verifica se concatenacao nao repete nenhuma letra
 			if str(dicionarioAux[letra][1]).find(terminal) != -1:
 				if str(dicionarioInterno[terminal]).find(dicionarioAux[letra][1][terminal]) != -1:
-					dicionarioInterno[terminal] = str(dicionarioInterno[terminal])+str(dicionarioAux[letra][1][terminal])
+
+					if str(dicionarioInterno[terminal]).find(str(dicionarioAux[letra][1][terminal])) == -1:
+
+						dicionarioInterno[terminal] = str(dicionarioInterno[terminal])+str(dicionarioAux[letra][1][terminal])
 				else:
 					dicionarioInterno[terminal] = dicionarioAux[letra][1][terminal]
 
