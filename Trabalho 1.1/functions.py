@@ -9,6 +9,8 @@ gramaticas = ''
 tokens     = ''
 estadosVisitados = set()
 estadosVisitadosOrd = []
+# Mortos
+conjMortos = set()
 
 def leArquivo(arquivo):
 	global entrada
@@ -237,13 +239,6 @@ def determiniza():
 		print(ordemDeterm)
 		print("\n")
 
-		
-
-
-
-
-
-
 	#ordemDeterm.pop(0) # deleta o primeiro valor da lista
 
 	print('PILHA')
@@ -285,6 +280,86 @@ def determinizaLinha(estado):
 	dicionarioAux[estado] = [flagFinal, dicionarioInterno]
 	# print('DICIONARIO AUX')
 	# print(dicionarioAux)
+
+def minimiza(): 
+	global dicionarioDet
+	global estadosVisitadosOrd
+
+	for estado in estadosVisitadosOrd:	
+		print('estados visitados ord')
+		print(estadosVisitadosOrd)
+		buscaEbsolon(estado)
+	
+	print("terminnou minimizacao")
+	print("CONJUNTO MORTOS")
+	print(conjMortos)
+
+def buscaEbsolon(estado):
+	global dicionarioDet
+	global conjuntoRefTerm
+
+	#print(dicionario)
+
+	print("buscaEbsolon == estado")
+	print(estado)
+
+	for terminal in conjuntoRefTerm:
+		if str(dicionarioDet[estado][1]).find(terminal) != -1: # existe esse terminal em S
+			aux = ''
+			for producoes in dicionarioDet[estado][1][terminal]: # varre todas as producoes do estado S
+				aux = str(aux)+str(producoes)
+			producao = aux
+			
+			buscaEbsolonEstado(producao, 0) # funcao que busca ebsolon somente nas producoes deste estado
+			# print("RETORNO DA FUNCAO")
+			# print(retorno)
+			# if retorno == 10: # este estado ja encontrou &, nao precisa analisar as outras producoes dele
+			# 	return 10
+			# if retorno == -1: # morto
+			# 	return -1
+
+			#print(producao+" | ")
+
+
+def buscaEbsolonEstado(estado, qtd):
+	global dicionarioDet
+	global conjuntoRefTerm
+	global conjMortos
+
+	qtd += 1
+
+	print("Busca & nestas producoes")
+	print(estado)
+
+	for terminal in conjuntoRefTerm:
+		# print("terminais")
+		# print(terminal)
+
+		if estado != '' and dicionarioDet[estado][0] == 0: # nao eh final			
+			if str(dicionarioDet[estado][1]).find(terminal) != -1:
+				print("teste")
+				print(dicionarioDet[estado][1][terminal])
+				print(qtd)
+				if qtd < 20:
+					buscaEbsolonEstado(dicionarioDet[estado][1][terminal], qtd)
+				else: 
+					# MORTO
+					print('MORTO')
+					print(estado)
+					if dicionarioDet[estado][0] == 0: # nao eh final
+						conjMortos.add(estado) # primeiro estado do loop
+					if dicionarioDet[dicionarioDet[estado][1][terminal]][0] == 0: # nao eh final
+						conjMortos.add(dicionarioDet[estado][1][terminal]) # segundo estado do loop
+					#ordemEntrada.remove(estado) # remove morto
+				
+
+	
+			
+		# if str(dicionario[estado][1]).find(terminal) != -1:
+		# 	for producoes in dicionario[estado][1][terminal]: # varre todas as producoes do estado S	
+		# 		print("terminais")
+		# 		print("||| "+producoes)
+	
 
 
 def imprimeAutomato(dicionario, estadosEntrada):

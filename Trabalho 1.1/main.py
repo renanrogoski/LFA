@@ -7,21 +7,16 @@ decodificaEntrada()
 criaAutomatoGramatica()
 criaProducoesToken()
 determiniza()
+minimiza()
 
 print("Automato NÃO determinizado")
 imprimeAutomato(dicionario, estadosEntrada)
-
-
 
 print("Impressão determinizada")
 imprimeAutomato(dicionarioDet, estadosVisitadosOrd) 
 
 print("DICIONARIO DET")
 print(dicionarioDet)
-
-
-
-
 
 print("\n")
 print("MAIN: Dicionario")
