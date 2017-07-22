@@ -13,6 +13,8 @@ estadosVisitadosOrd = [] # estados determinizados ordem
 conjMortos = set()
 # Para enconctrar inalcançáveis
 conjAlcancaveis = set()
+conjVisitadosInalc = set()
+conteudoArquivo = '' # conteudo que enviara para o arquivo
 
 def leArquivo(arquivo):
 	global entrada
@@ -283,44 +285,55 @@ def minimiza():
 	for estado in estadosVisitadosOrd:	
 		minimizaMortos(estado)
 	# Inalcançáveis
-	minimizaInalcancaveis(estadosVisitadosOrd[0]) # Envia apenas o primeiro estado
+	#minimizaInalcancaveis(estadosVisitadosOrd[0]) # Envia apenas o primeiro estado
 	# Printa inalcançáveis
-	printaMortos(conjMortos, estadosVisitadosOrd)
 
 def minimizaInalcancaveis(estado): # recebe apenas o estado inicial
 	global conjAlcancaveis
 	global conjuntoRefTerm
-	global dicionarioDet
+	global dicionario
+	global conjVisitadosInalc
+	
+	conjVisitadosInalc.add(estado)
 
 	conjAlcancaveis.add(estado) # insere o primeiro estado
 
 	for terminal in conjuntoRefTerm:
-		if str(dicionarioDet[estado][1]).find(terminal) != -1: # existe esse terminal em S
+		if str(dicionario[estado][1]).find(terminal) != -1: # existe esse terminal em S
 			aux = ''
-			# varre todas as producoes do estado S
-			for producoes in dicionarioDet[estado][1][terminal]: 
+			
+			for producoes in dicionario[estado][1][terminal]: 
 				aux = str(aux)+str(producoes)
 			producao = aux
-			
-			conjAlcancaveis.add(producao)
-			minimizaInalcancaveisProducoes(producao, 0) # funcao que busca ebsolon somente nas producoes deste estado
-
-	
+			# estado ainda nao criado, anal. separadamente
+			if len(producao) > 1: 
+				for cadaCaractEst in producao:
+					# funcao que busca ebsolon somente nas producoes deste estado
+					minimizaInalcancaveisProducoes(cadaCaractEst, 0)
+					conjAlcancaveis.add(cadaCaractEst) 
+			else:
+				minimizaInalcancaveisProducoes(producao, 0)
+				conjAlcancaveis.add(producao)			
 
 def minimizaInalcancaveisProducoes(estado, qtd):
 	global conjuntoRefTerm
 	global conjAlcancaveis
 	global dicionarioDet
+	global conjVisitadosInalc
 	qtd += 1
 	for terminal in conjuntoRefTerm:
 		if estado != '' and str(dicionarioDet[estado][1]).find(terminal) != -1:
-			if qtd < 20: # Ok
+			
+			conjVisitadosInalc.add(dicionarioDet[estado][1][terminal])
+			
+			if proximoEstado in conjVisitadosInalc and qtd < 20: # Ok
 				print('estado')
 				print(estado)
 				proximoEstado = dicionarioDet[estado][1][terminal]
 				# Encontrou um alcançado
 				conjAlcancaveis.add(proximoEstado)
 				#
+				
 				minimizaInalcancaveisProducoes(proximoEstado, qtd)
 				#
 
@@ -360,25 +373,53 @@ def minimizaMortosProducoes(estado, qtd):
 						conjMortos.add(dicionarioDet[estado][1][terminal]) # segundo estado do loop
 
 def imprimeAutomato(tipo, dicionario, estadosEntrada, mensagem):
-	print(mensagem)
+	global conjuntoRefTerm
+	global conteudoArquivo
 
+	dicionarioPrint = dicionario
+
+	# Limpar 
 	for i in estadosEntrada:
-		# Verifica se é final
-		if dicionario[i][0] == 1:
+		for j in conjuntoRefTerm:
+			if str(dicionarioPrint[i][1]).find(j) == -1: # Não encontrou
+				dicionarioPrint[i][1][j] = ' -- '
+
+	matriz = str(mensagem)+'\n\n'
+	matriz = str(matriz)+' |  δ\t'
+	for i in conjuntoRefTerm: # exibe todas as letrinhas
+		matriz = str(matriz)+' | '+i+'\t'
+	matriz = str(matriz)+' |\n'
+	matriz = str(matriz)+' ---------'
+	for i in conjuntoRefTerm: # exibe todas as letrinhas
+		matriz = str(matriz)+'--------'
+	matriz = str(matriz)+'\n'
+		
+	for i in estadosEntrada:
+		#
+		if dicionarioPrint[i][0] == 1:
 			final = '*'
 		else:
 			final = ' '
+		matriz = str(matriz)+' | '+final+i+'\t'
+
+		for j in conjuntoRefTerm:
+			matriz = str(matriz)+' | '+dicionarioPrint[i][1][j]+"\t"
+		
 		# Verifica se é morto
-		morto = ''
+		morto = ' | '
 		if i in conjMortos and tipo == 1: # é morto
 			morto = ' | Morto'
-		##
-		aux = final+str(i)+' | '+str(dicionario[i][1])+morto
-		print(aux)
 
-def printaMortos(conjMortos, estadosVisitadosOrd):
-	print('MORTOOOOOOSSS')
-	for estado in estadosVisitadosOrd:
-		if estado in conjMortos: # é morto
-			print('MORTO')
-			print(estado) 
+		matriz = str(matriz)+morto+'\n'
+
+	print(matriz)
+	# Concatena na variavel global para enviar tudo para arquivo de saída
+	conteudoArquivo = str(conteudoArquivo)+str(matriz)	
+
+def escreveArquivo():
+	global conteudoArquivo
+	arquivo = open('arquivos/saida.txt', 'w')
+	arquivo.truncate() # limpa arquivo, para caso de salvar arquivo ja existente
+	arquivo.seek(0)
+	arquivo.write(conteudoArquivo)
+	arquivo.close()

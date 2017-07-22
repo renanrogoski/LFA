@@ -1,6 +1,7 @@
-<S>::=a<S>|a<A>|b<C>|c<E>|ε
-<A>::=a<B>
-<B>::=b<A>
-<C>::=b<E>
-<E>::=a
-<F>::=b<B>
+se
+entao
+senao
+<S> ::= a<A> | e<A> | i<A> | o<A> | u<A>
+<A> ::= a<A> | e<A> | i<A> | o<B> | u<A> | ε
+<B>::= c<C>
+<C>::=a<B>|ε
