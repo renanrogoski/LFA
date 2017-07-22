@@ -171,8 +171,7 @@ def determiniza():
 	global dicionarioAux
 	global estadosVisitados
 	global estadosVisitadosOrd
-	conj = set()
-	visit = set()
+	
 	
 
 	dicionarioAux = dicionario
@@ -269,13 +268,15 @@ def determinizaLinha(estado):
 		for terminal in conjuntoRefTerm: 
 			# Verifica se concatenacao nao repete nenhuma letra
 			if str(dicionarioAux[letra][1]).find(terminal) != -1:
-				if str(dicionarioInterno[terminal]).find(dicionarioAux[letra][1][terminal]) != -1:
+				print("ero")
+				print(str(dicionarioInterno[terminal])+"*******"+str(dicionarioAux[letra][1][terminal]))
+				#  valida para não concatenar as mesmas letras
+				if str(dicionarioInterno[terminal]).find(dicionarioAux[letra][1][terminal]) == -1: # não encontrou 
 
-					if str(dicionarioInterno[terminal]).find(str(dicionarioAux[letra][1][terminal])) == -1:
-
-						dicionarioInterno[terminal] = str(dicionarioInterno[terminal])+str(dicionarioAux[letra][1][terminal])
-				else:
-					dicionarioInterno[terminal] = dicionarioAux[letra][1][terminal]
+					dicionarioInterno[terminal] = str(dicionarioInterno[terminal])+str(dicionarioAux[letra][1][terminal])
+					print(dicionarioInterno[terminal])
+				# else:
+				# 	dicionarioInterno[terminal] = dicionarioAux[letra][1][terminal]
 
 		# Verifica se este estado eh final
 		if dicionarioAux[letra][0] == 1:
