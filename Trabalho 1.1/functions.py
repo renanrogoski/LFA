@@ -3,14 +3,16 @@ dicionario    = {} #
 dicionarioDet = {} # dicionario determinizado
 dicionarioAux = {}	
 entrada = ''
-estadosEntrada = []		# nao terminais
+estadosEntrada = []  # nao terminais
 conjuntoRefTerm = [] # terminais
 gramaticas = ''
 tokens     = ''
 estadosVisitados = set()
-estadosVisitadosOrd = []
+estadosVisitadosOrd = [] # estados determinizados ordem
 # Mortos
 conjMortos = set()
+# Para enconctrar inalcançáveis
+conjAlcancaveis = set()
 
 def leArquivo(arquivo):
 	global entrada
@@ -251,9 +253,7 @@ def determiniza():
 def determinizaLinha(estado):
 	global conjuntoRefTerm
 	global dicionarioAux
-
 	flagFinal = 0
-
 	dicionarioInterno = {}
 	# concatena
 	for a in conjuntoRefTerm: 
@@ -270,38 +270,68 @@ def determinizaLinha(estado):
 
 					dicionarioInterno[terminal] = str(dicionarioInterno[terminal])+str(dicionarioAux[letra][1][terminal])
 					print(dicionarioInterno[terminal])
-				# else:
-				# 	dicionarioInterno[terminal] = dicionarioAux[letra][1][terminal]
 
 		# Verifica se este estado eh final
 		if dicionarioAux[letra][0] == 1:
 			flagFinal = 1
 
 	dicionarioAux[estado] = [flagFinal, dicionarioInterno]
-	# print('DICIONARIO AUX')
-	# print(dicionarioAux)
 
 def minimiza(): 
-	global dicionarioDet
 	global estadosVisitadosOrd
-
+	# Mortos
 	for estado in estadosVisitadosOrd:	
-		print('estados visitados ord')
-		print(estadosVisitadosOrd)
-		buscaEbsolon(estado)
-	
-	print("terminnou minimizacao")
-	print("CONJUNTO MORTOS")
-	print(conjMortos)
+		minimizaMortos(estado)
+	# Inalcançáveis
+	minimizaInalcancaveis(estadosVisitadosOrd[0]) # Envia apenas o primeiro estado
+	# Printa inalcançáveis
+	printaMortos(conjMortos, estadosVisitadosOrd)
 
-def buscaEbsolon(estado):
-	global dicionarioDet
+def minimizaInalcancaveis(estado): # recebe apenas o estado inicial
+	global conjAlcancaveis
 	global conjuntoRefTerm
+	global dicionarioDet
 
-	#print(dicionario)
+	conjAlcancaveis.add(estado) # insere o primeiro estado
 
-	print("buscaEbsolon == estado")
-	print(estado)
+	for terminal in conjuntoRefTerm:
+		if str(dicionarioDet[estado][1]).find(terminal) != -1: # existe esse terminal em S
+			aux = ''
+			# varre todas as producoes do estado S
+			for producoes in dicionarioDet[estado][1][terminal]: 
+				aux = str(aux)+str(producoes)
+			producao = aux
+			
+			conjAlcancaveis.add(producao)
+			minimizaInalcancaveisProducoes(producao, 0) # funcao que busca ebsolon somente nas producoes deste estado
+
+	
+
+def minimizaInalcancaveisProducoes(estado, qtd):
+	global conjuntoRefTerm
+	global conjAlcancaveis
+	global dicionarioDet
+	qtd += 1
+	for terminal in conjuntoRefTerm:
+		if estado != '' and str(dicionarioDet[estado][1]).find(terminal) != -1:
+			if qtd < 20: # Ok
+				print('estado')
+				print(estado)
+				proximoEstado = dicionarioDet[estado][1][terminal]
+				# Encontrou um alcançado
+				conjAlcancaveis.add(proximoEstado)
+				#
+				minimizaInalcancaveisProducoes(proximoEstado, qtd)
+				#
+
+			else: # deu loop
+				print('Deu loop')
+				return 
+
+####### MORTOS ######
+def minimizaMortos(estado):
+	global conjuntoRefTerm
+	global dicionarioDet
 
 	for terminal in conjuntoRefTerm:
 		if str(dicionarioDet[estado][1]).find(terminal) != -1: # existe esse terminal em S
@@ -310,70 +340,45 @@ def buscaEbsolon(estado):
 				aux = str(aux)+str(producoes)
 			producao = aux
 			
-			buscaEbsolonEstado(producao, 0) # funcao que busca ebsolon somente nas producoes deste estado
-			# print("RETORNO DA FUNCAO")
-			# print(retorno)
-			# if retorno == 10: # este estado ja encontrou &, nao precisa analisar as outras producoes dele
-			# 	return 10
-			# if retorno == -1: # morto
-			# 	return -1
+			minimizaMortosProducoes(producao, 0) # funcao que busca ebsolon somente nas producoes deste estado
 
-			#print(producao+" | ")
-
-
-def buscaEbsolonEstado(estado, qtd):
-	global dicionarioDet
+def minimizaMortosProducoes(estado, qtd):
 	global conjuntoRefTerm
 	global conjMortos
-
+	global dicionarioDet
 	qtd += 1
-
-	print("Busca & nestas producoes")
-	print(estado)
-
 	for terminal in conjuntoRefTerm:
-		# print("terminais")
-		# print(terminal)
-
 		if estado != '' and dicionarioDet[estado][0] == 0: # nao eh final			
 			if str(dicionarioDet[estado][1]).find(terminal) != -1:
-				print("teste")
-				print(dicionarioDet[estado][1][terminal])
-				print(qtd)
 				if qtd < 20:
-					buscaEbsolonEstado(dicionarioDet[estado][1][terminal], qtd)
+					minimizaMortosProducoes(dicionarioDet[estado][1][terminal], qtd)
 				else: 
 					# MORTO
-					print('MORTO')
-					print(estado)
 					if dicionarioDet[estado][0] == 0: # nao eh final
 						conjMortos.add(estado) # primeiro estado do loop
 					if dicionarioDet[dicionarioDet[estado][1][terminal]][0] == 0: # nao eh final
 						conjMortos.add(dicionarioDet[estado][1][terminal]) # segundo estado do loop
-					#ordemEntrada.remove(estado) # remove morto
-				
 
-	
-			
-		# if str(dicionario[estado][1]).find(terminal) != -1:
-		# 	for producoes in dicionario[estado][1][terminal]: # varre todas as producoes do estado S	
-		# 		print("terminais")
-		# 		print("||| "+producoes)
-	
+def imprimeAutomato(tipo, dicionario, estadosEntrada, mensagem):
+	print(mensagem)
 
-
-def imprimeAutomato(dicionario, estadosEntrada):
-	print("\n\nDicionario Final\n")
 	for i in estadosEntrada:
+		# Verifica se é final
 		if dicionario[i][0] == 1:
 			final = '*'
 		else:
 			final = ' '
-
-		aux = final+str(i)+' => '+str(dicionario[i][1])
+		# Verifica se é morto
+		morto = ''
+		if i in conjMortos and tipo == 1: # é morto
+			morto = ' | Morto'
+		##
+		aux = final+str(i)+' | '+str(dicionario[i][1])+morto
 		print(aux)
-	
-	# print("\n\nRef terminais")
-	# print(conjuntoRefTerm)
-	# print("\n\nOrdem Entrada")
-	# print(ordemEntrada)
+
+def printaMortos(conjMortos, estadosVisitadosOrd):
+	print('MORTOOOOOOSSS')
+	for estado in estadosVisitadosOrd:
+		if estado in conjMortos: # é morto
+			print('MORTO')
+			print(estado) 
