@@ -1,7 +1,12 @@
 se
-entao
-senao
-<S> ::= a<A> | e<A> | i<A> | o<A> | u<A>
+seu
+<S> ::= a<A> | b<A> | e<A> 
 <A> ::= a<A> | e<A> | i<A> | o<B> | u<A> | ε
 <B>::= c<C>
 <C>::=a<B>|ε
+<S>::=a<D>|b<E>|ε
+<D>::=b
+<E>::=c<S>
+<S>::=e<F>
+<F>::=s<G>
+<G>::=a<G>
