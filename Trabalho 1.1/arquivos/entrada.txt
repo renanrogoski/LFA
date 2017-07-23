@@ -1,5 +1,5 @@
 se
-seu
+senao
 <S> ::= a<A> | b<A> | e<A> 
 <A> ::= a<A> | e<A> | i<A> | o<B> | u<A> | ε
 <B>::= c<C>
